@@ -1,16 +1,3 @@
-Here is the complete, updated **`teacher-dashboard.html`** code.
-
-### Key Adjustments Made:
-
-1. **Default Filter Behavior:** The **Teacher Status** filter now defaults to **Active** upon load so that performance rates (% RQT, % Observed, % Taken Test) accurately reflect the active workforce out of the box.
-2. **Dynamic KPI Calculation:**
-* **Active Teachers:** Only counts teachers where `Teacher Status == 'Active'`.
-* **Total Headcount:** Sums across all status types currently selected by the filter.
-* **RQT Rate:** Uses active teacher headcount when filtering active staff, or total filtered headcount as the denominator when viewing all statuses.
-
-
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -419,9 +406,13 @@ Here is the complete, updated **`teacher-dashboard.html`** code.
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
+          console.log("CSV Parsed Successfully. Total Rows:", results.data.length);
           rawDataset = results.data;
           initFilters(rawDataset);
           applyFiltersAndRender();
+        },
+        error: function(err) {
+          console.error("PapaParse Error:", err);
         }
       });
 
@@ -431,9 +422,20 @@ Here is the complete, updated **`teacher-dashboard.html`** code.
       });
     });
 
+    // Flexible getter to safely match column names ignoring case & whitespace
+    function getColValue(row, keyName) {
+      if (!row) return '';
+      if (row[keyName] !== undefined) return row[keyName];
+      const target = keyName.toLowerCase().replace(/\s+/g, '');
+      const matchedKey = Object.keys(row).find(k => k.toLowerCase().replace(/\s+/g, '') === target);
+      return matchedKey ? row[matchedKey] : '';
+    }
+
     function cleanNum(val) {
       if (!val) return 0;
-      let clean = val.toString().replace(/%/g, '').replace(/,/g, '').trim();
+      let str = val.toString().trim();
+      if (str.startsWith('#') || str === '-' || str === 'N/A') return 0;
+      let clean = str.replace(/%/g, '').replace(/,/g, '').trim();
       let parsed = parseFloat(clean);
       return isNaN(parsed) ? 0 : parsed;
     }
@@ -446,14 +448,20 @@ Here is the complete, updated **`teacher-dashboard.html`** code.
       const statuses = new Set();
 
       data.forEach(row => {
-        if (row['Week #']) weeks.add(row['Week #'].trim());
-        if (row['Region']) regions.add(row['Region'].trim());
-        if (row['Center']) centers.add(row['Center'].trim());
-        if (row['Teacher Type']) types.add(row['Teacher Type'].trim());
-        if (row['Teacher Status']) statuses.add(row['Teacher Status'].trim());
+        const w = getColValue(row, 'Week #');
+        const r = getColValue(row, 'Region');
+        const c = getColValue(row, 'Center');
+        const t = getColValue(row, 'Teacher Type');
+        const s = getColValue(row, 'Teacher Status');
+
+        if (w) weeks.add(w.trim());
+        if (r) regions.add(r.trim());
+        if (c) centers.add(c.trim());
+        if (t) types.add(t.trim());
+        if (s) statuses.add(s.trim());
       });
 
-      // Populate Week Dropdown (Single Select - Latest Week Default)
+      // Populate Week Dropdown
       const weekArr = Array.from(weeks).sort((a, b) => b.localeCompare(a, undefined, {numeric: true}));
       $('#filter-week').empty();
       weekArr.forEach((w, index) => {
@@ -475,11 +483,16 @@ Here is the complete, updated **`teacher-dashboard.html`** code.
         $('#filter-type').append(`<option value="${t}">${t}</option>`);
       });
 
-      // Populate Statuses (Defaults to 'Active' on initialization)
-      Array.from(statuses).sort().forEach(s => {
+      // Populate Statuses (Defaults to 'Active' if available, otherwise ALL)
+      const statusArr = Array.from(statuses).sort();
+      const hasActive = statusArr.some(s => s.toLowerCase() === 'active');
+      statusArr.forEach(s => {
         const isDefault = s.toLowerCase() === 'active';
         $('#filter-status').append(`<option value="${s}" ${isDefault ? 'selected' : ''}>${s}</option>`);
       });
+      if (!hasActive) {
+        $('#filter-status').prepend('<option value="ALL" selected>All Statuses</option>');
+      }
     }
 
     function applyFiltersAndRender() {
@@ -489,13 +502,18 @@ Here is the complete, updated **`teacher-dashboard.html`** code.
       const selectedType = $('#filter-type').val();
       const selectedStatus = $('#filter-status').val();
 
-      // Filter Data
       const filtered = rawDataset.filter(row => {
-        const matchWeek = !selectedWeek || (row['Week #'] && row['Week #'].trim() === selectedWeek);
-        const matchRegion = selectedRegion === 'ALL' || (row['Region'] && row['Region'].trim() === selectedRegion);
-        const matchCenter = selectedCenter === 'ALL' || (row['Center'] && row['Center'].trim() === selectedCenter);
-        const matchType = selectedType === 'ALL' || (row['Teacher Type'] && row['Teacher Type'].trim() === selectedType);
-        const matchStatus = selectedStatus === 'ALL' || (row['Teacher Status'] && row['Teacher Status'].trim() === selectedStatus);
+        const rowWeek = getColValue(row, 'Week #').trim();
+        const rowRegion = getColValue(row, 'Region').trim();
+        const rowCenter = getColValue(row, 'Center').trim();
+        const rowType = getColValue(row, 'Teacher Type').trim();
+        const rowStatus = getColValue(row, 'Teacher Status').trim();
+
+        const matchWeek = !selectedWeek || rowWeek === selectedWeek;
+        const matchRegion = selectedRegion === 'ALL' || rowRegion === selectedRegion;
+        const matchCenter = selectedCenter === 'ALL' || rowCenter === selectedCenter;
+        const matchType = selectedType === 'ALL' || rowType === selectedType;
+        const matchStatus = selectedStatus === 'ALL' || rowStatus === selectedStatus;
 
         return matchWeek && matchRegion && matchCenter && matchType && matchStatus;
       });
@@ -514,8 +532,8 @@ Here is the complete, updated **`teacher-dashboard.html`** code.
       let totalQualifiedSesi = 0;
 
       data.forEach(row => {
-        const status = (row['Teacher Status'] || '').trim().toLowerCase();
-        const numTeachers = cleanNum(row['# Teachers']);
+        const status = getColValue(row, 'Teacher Status').trim().toLowerCase();
+        const numTeachers = cleanNum(getColValue(row, '# Teachers'));
         
         totalFilteredTeachers += numTeachers;
 
@@ -523,14 +541,13 @@ Here is the complete, updated **`teacher-dashboard.html`** code.
           activeTeachersCount += numTeachers;
         }
 
-        totalObserved += cleanNum(row['# Active Teachers Observed']);
-        totalTakenTest += cleanNum(row['# Unique Teachers UKRG']);
-        totalQualified += cleanNum(row['# Qualified Teachers']);
-        totalSesi += cleanNum(row['# Sesi']);
-        totalQualifiedSesi += cleanNum(row['# Qualified Sesi']);
+        totalObserved += cleanNum(getColValue(row, '# Active Teachers Observed'));
+        totalTakenTest += cleanNum(getColValue(row, '# Unique Teachers UKRG'));
+        totalQualified += cleanNum(getColValue(row, '# Qualified Teachers'));
+        totalSesi += cleanNum(getColValue(row, '# Sesi'));
+        totalQualifiedSesi += cleanNum(getColValue(row, '# Qualified Sesi'));
       });
 
-      // RQT denominator uses Active teachers if filtering Active, or total filtered teachers if viewing all
       const rqtDenominator = activeTeachersCount > 0 ? activeTeachersCount : totalFilteredTeachers;
       const overallRQT = rqtDenominator > 0 ? ((totalQualified / rqtDenominator) * 100).toFixed(1) : '0.0';
       const overallSQT = totalSesi > 0 ? ((totalQualifiedSesi / totalSesi) * 100).toFixed(1) : '0.0';
@@ -550,25 +567,25 @@ Here is the complete, updated **`teacher-dashboard.html`** code.
 
       let bodyHtml = '';
       data.forEach(row => {
-        const numTeachers = cleanNum(row['# Teachers']);
-        const numQualified = cleanNum(row['# Qualified Teachers']);
-        const pctRQT = numTeachers > 0 ? ((numQualified / numTeachers) * 100).toFixed(1) : cleanNum(row['% Qualified Teachers (RQT)']).toFixed(1);
+        const numTeachers = cleanNum(getColValue(row, '# Teachers'));
+        const numQualified = cleanNum(getColValue(row, '# Qualified Teachers'));
+        const pctRQT = numTeachers > 0 ? ((numQualified / numTeachers) * 100).toFixed(1) : cleanNum(getColValue(row, '% Qualified Teachers (RQT)')).toFixed(1);
 
-        const numObserved = cleanNum(row['# Active Teachers Observed']);
-        const pctObserved = numTeachers > 0 ? ((numObserved / numTeachers) * 100).toFixed(1) : cleanNum(row['% Active Teachrs Observed']).toFixed(1);
-        const avgScoreObs = cleanNum(row['Average Nilai Observation']).toFixed(1);
+        const numObserved = cleanNum(getColValue(row, '# Active Teachers Observed'));
+        const pctObserved = numTeachers > 0 ? ((numObserved / numTeachers) * 100).toFixed(1) : cleanNum(getColValue(row, '% Active Teachrs Observed')).toFixed(1);
+        const avgScoreObs = cleanNum(getColValue(row, 'Average Nilai Observation')).toFixed(1);
 
-        const numTakenTest = cleanNum(row['# Unique Teachers UKRG']);
-        const pctTakenTest = numTeachers > 0 ? ((numTakenTest / numTeachers) * 100).toFixed(1) : cleanNum(row['% Unique Teachers Taken Test']).toFixed(1);
-        const avgScoreTest = cleanNum(row['Average Nilai UKRG']).toFixed(1);
+        const numTakenTest = cleanNum(getColValue(row, '# Unique Teachers UKRG'));
+        const pctTakenTest = numTeachers > 0 ? ((numTakenTest / numTeachers) * 100).toFixed(1) : cleanNum(getColValue(row, '% Unique Teachers Taken Test')).toFixed(1);
+        const avgScoreTest = cleanNum(getColValue(row, 'Average Nilai UKRG')).toFixed(1);
 
-        const sqtVal = cleanNum(row['SQT']).toFixed(1);
+        const sqtVal = cleanNum(getColValue(row, 'SQT')).toFixed(1);
 
         bodyHtml += `
           <tr>
-            <td>${row['Week #'] || '-'}</td>
-            <td>${row['Region'] || '-'}</td>
-            <td>${row['Center'] || '-'}</td>
+            <td>${getColValue(row, 'Week #') || '-'}</td>
+            <td>${getColValue(row, 'Region') || '-'}</td>
+            <td>${getColValue(row, 'Center') || '-'}</td>
             <td><strong>${numTeachers}</strong></td>
             <td>${numQualified}</td>
             <td>${pctRQT}%</td>
@@ -588,7 +605,7 @@ Here is the complete, updated **`teacher-dashboard.html`** code.
       dataTableInstance = $('#teacherTable').DataTable({
         responsive: true,
         pageLength: 15,
-        order: [[2, 'asc']], // Order by Center name by default
+        order: [[2, 'asc']],
         language: {
           emptyTable: "No data available for selected filter combination"
         }
@@ -597,5 +614,3 @@ Here is the complete, updated **`teacher-dashboard.html`** code.
   </script>
 </body>
 </html>
-
-```
