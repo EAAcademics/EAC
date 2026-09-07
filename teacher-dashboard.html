@@ -4,35 +4,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Teacher Dashboard - English Academy</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
   <style>
     :root {
-      --primary: #0f172a;
-      --bg: #f8fafc;
-      --border: #e2e8f0;
+      --primary: #3056A5;
+      --secondary: #7E6FB1;
+      --accent-red: #EE4749;
+      --accent-blue: #3F92CF;
+      --accent-yellow: #FCB614;
+      --bg-light: #F3F9F9;
+      --text-dark: #282828;
+      --text-muted: #64748b;
+      --card-bg: #ffffff;
+      --border-soft: #e2e8f0;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
-      background-color: var(--bg);
+      background-color: var(--bg-light);
+      color: var(--text-dark);
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
     }
 
-    /* Navigation Bar */
+    /* Navigation */
     nav {
       background-color: var(--primary);
-      position: relative;
+      position: sticky;
+      top: 0;
       z-index: 1000;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
     .nav-container {
@@ -42,49 +58,170 @@
       justify-content: space-between;
       align-items: center;
       padding: 0 1.5rem;
-      height: 60px;
+      height: 65px;
     }
 
     .nav-brand {
       color: #ffffff;
       font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       text-decoration: none;
     }
 
-    .nav-links {
+    .nav-menu {
       display: flex;
       gap: 1rem;
-      list-style: none;
-      overflow-x: auto;
+      align-items: center;
     }
 
-    .nav-links a {
-      color: #cbd5e1;
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 500;
-      white-space: nowrap;
-      transition: color 0.2s ease;
-    }
-
-    .nav-links a:hover,
-    .nav-links a.active {
-      color: #ffffff;
-    }
-
-    /* Dashboard Container */
-    .dashboard-container {
-      flex: 1;
-      width: 100%;
-      height: calc(100vh - 60px);
+    .nav-item {
       position: relative;
     }
 
-    iframe {
-      width: 100%;
-      height: 100%;
+    .nav-link, .dropdown-btn {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      background: transparent;
       border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover, .dropdown-btn:hover, .nav-link.active {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 110%;
+      left: 0;
+      background-color: #ffffff;
+      min-width: 200px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+      border-radius: 16px;
+      overflow: hidden;
+      z-index: 1001;
+      border: 1px solid var(--border-soft);
+      padding: 0.5rem 0;
+    }
+
+    .dropdown-content a {
+      color: var(--text-dark);
+      padding: 0.75rem 1.25rem;
+      text-decoration: none;
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .dropdown-content a:hover {
+      background-color: var(--bg-light);
+      color: var(--primary);
+    }
+
+    .nav-item:hover .dropdown-content {
+      display: block;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Page Header */
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* KPI Summary Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-soft);
+    }
+
+    .kpi-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+    }
+
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Table Container */
+    .table-container {
+      background-color: var(--card-bg);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-soft);
+      overflow-x: auto;
+    }
+
+    /* Custom DataTables Styling */
+    table.dataTable {
+      width: 100% !important;
+      border-collapse: collapse !important;
+    }
+
+    table.dataTable thead th {
+      background-color: var(--bg-light);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.85rem;
+      border-bottom: 2px solid var(--border-soft) !important;
+      padding: 12px;
+      text-align: left;
+    }
+
+    table.dataTable tbody td {
+      font-size: 0.875rem;
+      padding: 12px;
+      border-bottom: 1px solid var(--border-soft) !important;
+    }
+
+    footer {
+      background-color: var(--primary);
+      color: #ffffff;
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.875rem;
+      margin-top: auto;
     }
   </style>
 </head>
@@ -94,29 +231,146 @@
   <nav>
     <div class="nav-container">
       <a href="index.html" class="nav-brand">English Academy</a>
-      <ul class="nav-links">
-        <li><a href="index.html">Homepage</a></li>
-        <li><a href="teacher-dashboard.html" class="active">Dashboard: Teacher</a></li>
-        <li><a href="student-dashboard.html">Dashboard: Student</a></li>
-        <li><a href="service-dashboard.html">Dashboard: Service</a></li>
-        <li><a href="sales.html">Sales</a></li>
-        <li><a href="acops.html">AcOps</a></li>
-        <li><a href="mtc.html">MTC</a></li>
-        <li><a href="sa.html">SA</a></li>
-      </ul>
+      
+      <div class="nav-menu">
+        <a href="index.html" class="nav-link">Homepage</a>
+
+        <div class="nav-item">
+          <button class="dropdown-btn">Dashboard ▼</button>
+          <div class="dropdown-content">
+            <a href="teacher-dashboard.html">Teacher</a>
+            <a href="student-dashboard.html">Student</a>
+            <a href="service-dashboard.html">Service</a>
+          </div>
+        </div>
+
+        <div class="nav-item">
+          <button class="dropdown-btn">Tools ▼</button>
+          <div class="dropdown-content">
+            <a href="sales.html">Sales</a>
+            <a href="acops.html">AcOps</a>
+            <a href="mtc.html">MTC</a>
+            <a href="sa.html">SA</a>
+          </div>
+        </div>
+      </div>
     </div>
   </nav>
 
-  <!-- Embed Container -->
-  <div class="dashboard-container">
-    <iframe 
-      src="https://datastudio.google.com/embed/reporting/8306eaa2-f357-481f-a12d-3047876d088b/page/hAH8F" 
-      frameborder="0" 
-      style="border:0" 
-      allowfullscreen 
-      sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
-    </iframe>
-  </div>
+  <!-- Main Content Area -->
+  <main>
+    <h1 class="page-title">Teacher Performance Dashboard</h1>
+    <p class="page-subtitle">Real-time performance metrics, observations, and quality scores live from Google Sheets.</p>
 
+    <!-- KPI Summary Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Total Records</div>
+        <div class="kpi-value" id="kpi-teachers">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Average UKRG Score</div>
+        <div class="kpi-value" id="kpi-ukrg">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Average SQT Rate</div>
+        <div class="kpi-value" id="kpi-sqt">--</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Average RQT Rate</div>
+        <div class="kpi-value" id="kpi-rqt">--</div>
+      </div>
+    </div>
+
+    <!-- Native Data Table -->
+    <div class="table-container">
+      <table id="teacherTable" class="display responsive nowrap">
+        <thead>
+          <tr id="tableHeader">
+            <!-- Headers generated dynamically -->
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Rows generated dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer>
+    For internal English Academy Use only!
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+  <script>
+    const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTEx-IAmyu2v_oB025kufDC66x3fDqLQanQfufWU_zt1rTkiF_rfIpGisjD3RDW-WcMmzNqZv2YvwUp/pub?gid=831264579&single=true&output=csv';
+
+    $(document).ready(function() {
+      Papa.parse(GOOGLE_SHEET_CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          buildDashboard(results.data);
+        }
+      });
+    });
+
+    function buildDashboard(data) {
+      if (!data || data.length === 0) return;
+
+      $('#kpi-teachers').text(data.length);
+
+      // Extract Headers dynamically from the CSV sheet
+      const headers = Object.keys(data[0]);
+      let headerHtml = '';
+      headers.forEach(h => headerHtml += `<th>${h}</th>`);
+      $('#tableHeader').html(headerHtml);
+
+      // Populate Table Rows & Calculate Metric Averages
+      let bodyHtml = '';
+      let sumUKRG = 0, countUKRG = 0;
+      let sumSQT = 0, countSQT = 0;
+      let sumRQT = 0, countRQT = 0;
+
+      data.forEach(row => {
+        bodyHtml += '<tr>';
+        headers.forEach(h => {
+          let val = row[h] || '-';
+
+          // Track averages dynamically if matching column names exist
+          const headerLower = h.toLowerCase();
+          const cleanNum = parseFloat(val.toString().replace('%', ''));
+
+          if (!isNaN(cleanNum)) {
+            if (headerLower.includes('ukrg')) { sumUKRG += cleanNum; countUKRG++; }
+            if (headerLower.includes('sqt')) { sumSQT += cleanNum; countSQT++; }
+            if (headerLower.includes('rqt')) { sumRQT += cleanNum; countRQT++; }
+          }
+
+          bodyHtml += `<td>${val}</td>`;
+        });
+        bodyHtml += '</tr>';
+      });
+
+      $('#tableBody').html(bodyHtml);
+
+      // Update KPIs
+      $('#kpi-ukrg').text(countUKRG > 0 ? (sumUKRG / countUKRG).toFixed(1) : 'N/A');
+      $('#kpi-sqt').text(countSQT > 0 ? (sumSQT / countSQT).toFixed(1) + '%' : 'N/A');
+      $('#kpi-rqt').text(countRQT > 0 ? (sumRQT / countRQT).toFixed(1) + '%' : 'N/A');
+
+      // Initialize DataTable
+      $('#teacherTable').DataTable({
+        responsive: true,
+        pageLength: 15,
+        order: [[0, 'asc']]
+      });
+    }
+  </script>
 </body>
 </html>
