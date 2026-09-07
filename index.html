@@ -1,31 +1,314 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Teacher Performance Dashboard</title>
+  <title>English Academy - Internal Operations Hub</title>
   <style>
-    body, html {
+    :root {
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      height: 100%;
-      overflow: hidden;
-      background-color: #f8f9fa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    iframe {
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Navigation */
+    nav {
+      background-color: var(--primary);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1.5rem;
+      height: 60px;
+    }
+
+    .nav-brand {
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      list-style: none;
+      overflow-x: auto;
+    }
+
+    .nav-links a {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #ffffff;
+    }
+
+    /* Header Banner */
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: #ffffff;
+      padding: 3.5rem 1.5rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
+    }
+
+    header p {
+      color: #94a3b8;
+      font-size: 1.125rem;
+      font-weight: 400;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      flex: 1;
       width: 100%;
-      height: 100vh;
-      border: none;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Grid Layouts */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+      border-color: var(--accent);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-icon {
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
+      background-color: #eff6ff;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .card-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--primary);
+      color: #94a3b8;
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.875rem;
+      margin-top: auto;
     }
   </style>
 </head>
 <body>
 
-  <iframe 
-    src="<iframe width="600" height="683" src="https://datastudio.google.com/embed/reporting/8306eaa2-f357-481f-a12d-3047876d088b/page/hAH8F" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>" 
-    allowfullscreen 
-    sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
-  </iframe>
+  <!-- Navigation Pane -->
+  <nav>
+    <div class="nav-container">
+      <a href="index.html" class="nav-brand">English Academy</a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Homepage</a></li>
+        <li><a href="teacher-dashboard.html">Dashboard: Teacher</a></li>
+        <li><a href="student-dashboard.html">Dashboard: Student</a></li>
+        <li><a href="service-dashboard.html">Dashboard: Service</a></li>
+        <li><a href="sales.html">Sales</a></li>
+        <li><a href="acops.html">AcOps</a></li>
+        <li><a href="mtc.html">MTC</a></li>
+        <li><a href="sa.html">SA</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Title Header -->
+  <header>
+    <h1>English Academy by Ruangguru</h1>
+    <p>Internal Operations Hub</p>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Metric Dashboards Section -->
+    <h2 class="section-title">Metric Dashboards</h2>
+    <div class="grid-3">
+      
+      <a href="teacher-dashboard.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">👩‍🏫</div>
+          <div class="card-title">Teacher Dashboard</div>
+        </div>
+        <div class="card-desc">
+          Tracking teachers, observation scores, UKRG performance, RQT, and SQT metrics.
+        </div>
+      </a>
+
+      <a href="student-dashboard.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">👨‍🎓</div>
+          <div class="card-title">Student Dashboard</div>
+        </div>
+        <div class="card-desc">
+          Monitoring total students, rombel distributions, attendance rates, and overall learning experiences.
+        </div>
+      </a>
+
+      <a href="service-dashboard.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">📊</div>
+          <div class="card-title">Service Dashboard</div>
+        </div>
+        <div class="card-desc">
+          Quiz and score output tracking, student achievements, and academic reporting analytics.
+        </div>
+      </a>
+
+    </div>
+
+    <!-- Team Resources Section -->
+    <h2 class="section-title">Team Resources</h2>
+    <div class="grid-4">
+
+      <a href="sales.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">💼</div>
+          <div class="card-title">Sales</div>
+        </div>
+        <div class="card-desc">
+          Pitch decks, academic sales training materials, event management, and renewal strategies.
+        </div>
+      </a>
+
+      <a href="acops.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">⚙️</div>
+          <div class="card-title">AcOps</div>
+        </div>
+        <div class="card-desc">
+          Operational tracking systems, implementation guidelines, and core execution tools.
+        </div>
+      </a>
+
+      <a href="mtc.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">📚</div>
+          <div class="card-title">MTC</div>
+        </div>
+        <div class="card-desc">
+          Curriculum repositories, teacher skill training modules, and student-based learning tools.
+        </div>
+      </a>
+
+      <a href="sa.html" class="card">
+        <div class="card-header">
+          <div class="card-icon">🎯</div>
+          <div class="card-title">SA</div>
+        </div>
+        <div class="card-desc">
+          Communication scripts, service operational tools, and student output monitoring databases.
+        </div>
+      </a>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    For internal English Academy Use only!
+  </footer>
 
 </body>
 </html>
+
+```
