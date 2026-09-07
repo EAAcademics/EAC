@@ -406,13 +406,9 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          console.log("CSV Parsed Successfully. Total Rows:", results.data.length);
           rawDataset = results.data;
           initFilters(rawDataset);
           applyFiltersAndRender();
-        },
-        error: function(err) {
-          console.error("PapaParse Error:", err);
         }
       });
 
@@ -425,19 +421,35 @@
     // Flexible getter to safely match column names ignoring case & whitespace
     function getColValue(row, keyName) {
       if (!row) return '';
-      if (row[keyName] !== undefined) return row[keyName];
+      if (row[keyName] !== undefined && row[keyName] !== null) return row[keyName];
       const target = keyName.toLowerCase().replace(/\s+/g, '');
       const matchedKey = Object.keys(row).find(k => k.toLowerCase().replace(/\s+/g, '') === target);
-      return matchedKey ? row[matchedKey] : '';
+      return matchedKey && row[matchedKey] !== null ? row[matchedKey] : '';
     }
 
-    function cleanNum(val) {
-      if (!val) return 0;
+    // Convert numeric string or decimal percentage into a number safely
+    function parseNum(val) {
+      if (val === undefined || val === null) return 0;
       let str = val.toString().trim();
-      if (str.startsWith('#') || str === '-' || str === 'N/A') return 0;
+      if (str === '' || str.startsWith('#') || str === '-' || str === 'N/A') return 0;
+      
+      let isPct = str.includes('%');
       let clean = str.replace(/%/g, '').replace(/,/g, '').trim();
       let parsed = parseFloat(clean);
-      return isNaN(parsed) ? 0 : parsed;
+      
+      if (isNaN(parsed)) return 0;
+      
+      // If original value was standard decimal representation (e.g., 0.85), convert to percentage scale (85)
+      if (!isPct && parsed > 0 && parsed <= 1) {
+        return parsed * 100;
+      }
+      return parsed;
+    }
+
+    // Format numbers safely into percentage strings
+    function fmtPct(val) {
+      const num = parseNum(val);
+      return num.toFixed(1) + '%';
     }
 
     function initFilters(data) {
@@ -454,11 +466,11 @@
         const t = getColValue(row, 'Teacher Type');
         const s = getColValue(row, 'Teacher Status');
 
-        if (w) weeks.add(w.trim());
-        if (r) regions.add(r.trim());
-        if (c) centers.add(c.trim());
-        if (t) types.add(t.trim());
-        if (s) statuses.add(s.trim());
+        if (w) weeks.add(w.toString().trim());
+        if (r) regions.add(r.toString().trim());
+        if (c) centers.add(c.toString().trim());
+        if (t) types.add(t.toString().trim());
+        if (s) statuses.add(s.toString().trim());
       });
 
       // Populate Week Dropdown
@@ -483,7 +495,7 @@
         $('#filter-type').append(`<option value="${t}">${t}</option>`);
       });
 
-      // Populate Statuses (Defaults to 'Active' if available, otherwise ALL)
+      // Populate Statuses
       const statusArr = Array.from(statuses).sort();
       const hasActive = statusArr.some(s => s.toLowerCase() === 'active');
       statusArr.forEach(s => {
@@ -503,11 +515,11 @@
       const selectedStatus = $('#filter-status').val();
 
       const filtered = rawDataset.filter(row => {
-        const rowWeek = getColValue(row, 'Week #').trim();
-        const rowRegion = getColValue(row, 'Region').trim();
-        const rowCenter = getColValue(row, 'Center').trim();
-        const rowType = getColValue(row, 'Teacher Type').trim();
-        const rowStatus = getColValue(row, 'Teacher Status').trim();
+        const rowWeek = getColValue(row, 'Week #').toString().trim();
+        const rowRegion = getColValue(row, 'Region').toString().trim();
+        const rowCenter = getColValue(row, 'Center').toString().trim();
+        const rowType = getColValue(row, 'Teacher Type').toString().trim();
+        const rowStatus = getColValue(row, 'Teacher Status').toString().trim();
 
         const matchWeek = !selectedWeek || rowWeek === selectedWeek;
         const matchRegion = selectedRegion === 'ALL' || rowRegion === selectedRegion;
@@ -532,8 +544,8 @@
       let totalQualifiedSesi = 0;
 
       data.forEach(row => {
-        const status = getColValue(row, 'Teacher Status').trim().toLowerCase();
-        const numTeachers = cleanNum(getColValue(row, '# Teachers'));
+        const status = getColValue(row, 'Teacher Status').toString().trim().toLowerCase();
+        const numTeachers = parseNum(getColValue(row, '# Teachers'));
         
         totalFilteredTeachers += numTeachers;
 
@@ -541,11 +553,11 @@
           activeTeachersCount += numTeachers;
         }
 
-        totalObserved += cleanNum(getColValue(row, '# Active Teachers Observed'));
-        totalTakenTest += cleanNum(getColValue(row, '# Unique Teachers UKRG'));
-        totalQualified += cleanNum(getColValue(row, '# Qualified Teachers'));
-        totalSesi += cleanNum(getColValue(row, '# Sesi'));
-        totalQualifiedSesi += cleanNum(getColValue(row, '# Qualified Sesi'));
+        totalObserved += parseNum(getColValue(row, '# Active Teachers Observed'));
+        totalTakenTest += parseNum(getColValue(row, '# Unique Teachers UKRG'));
+        totalQualified += parseNum(getColValue(row, '# Qualified Teachers'));
+        totalSesi += parseNum(getColValue(row, '# Sesi'));
+        totalQualifiedSesi += parseNum(getColValue(row, '# Qualified Sesi'));
       });
 
       const rqtDenominator = activeTeachersCount > 0 ? activeTeachersCount : totalFilteredTeachers;
@@ -567,19 +579,24 @@
 
       let bodyHtml = '';
       data.forEach(row => {
-        const numTeachers = cleanNum(getColValue(row, '# Teachers'));
-        const numQualified = cleanNum(getColValue(row, '# Qualified Teachers'));
-        const pctRQT = numTeachers > 0 ? ((numQualified / numTeachers) * 100).toFixed(1) : cleanNum(getColValue(row, '% Qualified Teachers (RQT)')).toFixed(1);
+        const numTeachers = parseNum(getColValue(row, '# Teachers'));
+        const numQualified = parseNum(getColValue(row, '# Qualified Teachers'));
+        const rawRQT = getColValue(row, '% Qualified Teachers (RQT)');
+        const pctRQT = numTeachers > 0 ? ((numQualified / numTeachers) * 100).toFixed(1) : parseNum(rawRQT).toFixed(1);
 
-        const numObserved = cleanNum(getColValue(row, '# Active Teachers Observed'));
-        const pctObserved = numTeachers > 0 ? ((numObserved / numTeachers) * 100).toFixed(1) : cleanNum(getColValue(row, '% Active Teachrs Observed')).toFixed(1);
-        const avgScoreObs = cleanNum(getColValue(row, 'Average Nilai Observation')).toFixed(1);
+        const numObserved = parseNum(getColValue(row, '# Active Teachers Observed'));
+        const rawObs = getColValue(row, '% Active Teachrs Observed');
+        const pctObserved = numTeachers > 0 ? ((numObserved / numTeachers) * 100).toFixed(1) : parseNum(rawObs).toFixed(1);
+        const avgScoreObs = parseNum(getColValue(row, 'Average Nilai Observation')).toFixed(1);
 
-        const numTakenTest = cleanNum(getColValue(row, '# Unique Teachers UKRG'));
-        const pctTakenTest = numTeachers > 0 ? ((numTakenTest / numTeachers) * 100).toFixed(1) : cleanNum(getColValue(row, '% Unique Teachers Taken Test')).toFixed(1);
-        const avgScoreTest = cleanNum(getColValue(row, 'Average Nilai UKRG')).toFixed(1);
+        const numTakenTest = parseNum(getColValue(row, '# Unique Teachers UKRG'));
+        const rawTest = getColValue(row, '% Unique Teachers Taken Test');
+        const pctTakenTest = numTeachers > 0 ? ((numTakenTest / numTeachers) * 100).toFixed(1) : parseNum(rawTest).toFixed(1);
+        const avgScoreTest = parseNum(getColValue(row, 'Average Nilai UKRG')).toFixed(1);
 
-        const sqtVal = cleanNum(getColValue(row, 'SQT')).toFixed(1);
+        // Check if SQT string is present or needs fallback calculation
+        const sqtRaw = getColValue(row, 'SQT');
+        const sqtVal = sqtRaw !== '' ? fmtPct(sqtRaw) : '0.0%';
 
         bodyHtml += `
           <tr>
@@ -595,7 +612,7 @@
             <td>${numTakenTest}</td>
             <td>${pctTakenTest}%</td>
             <td>${avgScoreTest}</td>
-            <td><strong>${sqtVal}%</strong></td>
+            <td><strong>${sqtVal}</strong></td>
           </tr>
         `;
       });
