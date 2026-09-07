@@ -1,3 +1,16 @@
+Here is the complete, updated **`teacher-dashboard.html`** code.
+
+### Key Adjustments Made:
+
+1. **Default Filter Behavior:** The **Teacher Status** filter now defaults to **Active** upon load so that performance rates (% RQT, % Observed, % Taken Test) accurately reflect the active workforce out of the box.
+2. **Dynamic KPI Calculation:**
+* **Active Teachers:** Only counts teachers where `Teacher Status == 'Active'`.
+* **Total Headcount:** Sums across all status types currently selected by the filter.
+* **RQT Rate:** Uses active teacher headcount when filtering active staff, or total filtered headcount as the denominator when viewing all statuses.
+
+
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -584,3 +597,5 @@
   </script>
 </body>
 </html>
+
+```
