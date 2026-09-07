@@ -52,7 +52,7 @@
     }
 
     .nav-container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
@@ -133,14 +133,13 @@
 
     /* Main Container */
     main {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 2rem 1.5rem;
       width: 100%;
       flex: 1;
     }
 
-    /* Page Header */
     .page-title {
       font-size: 1.8rem;
       font-weight: 800;
@@ -154,46 +153,89 @@
       margin-bottom: 1.5rem;
     }
 
-    /* KPI Summary Cards */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2rem;
-    }
-
-    .kpi-card {
+    /* Filter Bar */
+    .filter-card {
       background-color: var(--card-bg);
       border-radius: 16px;
       padding: 1.25rem;
       box-shadow: 0 4px 15px rgba(0,0,0,0.03);
       border: 1px solid var(--border-soft);
+      margin-bottom: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .filter-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-group select {
+      padding: 0.6rem 0.8rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background-color: var(--bg-light);
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      outline: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .filter-group select:focus {
+      border-color: var(--primary);
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 1.1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-soft);
+      border-left: 4px solid var(--primary);
     }
 
     .kpi-title {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
-      font-weight: 500;
-      margin-bottom: 0.4rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
     }
 
     .kpi-value {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 700;
       color: var(--primary);
     }
 
-    /* Table Container */
+    /* Data Table Container */
     .table-container {
       background-color: var(--card-bg);
       border-radius: 20px;
-      padding: 1.5rem;
+      padding: 1.25rem;
       box-shadow: 0 4px 15px rgba(0,0,0,0.03);
       border: 1px solid var(--border-soft);
       overflow-x: auto;
     }
 
-    /* Custom DataTables Styling */
     table.dataTable {
       width: 100% !important;
       border-collapse: collapse !important;
@@ -203,16 +245,18 @@
       background-color: var(--bg-light);
       color: var(--primary);
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       border-bottom: 2px solid var(--border-soft) !important;
-      padding: 12px;
+      padding: 10px;
       text-align: left;
+      white-space: nowrap;
     }
 
     table.dataTable tbody td {
-      font-size: 0.875rem;
-      padding: 12px;
+      font-size: 0.85rem;
+      padding: 10px;
       border-bottom: 1px solid var(--border-soft) !important;
+      white-space: nowrap;
     }
 
     footer {
@@ -227,7 +271,7 @@
 </head>
 <body>
 
-  <!-- Navigation Pane -->
+  <!-- Navigation Bar -->
   <nav>
     <div class="nav-container">
       <a href="index.html" class="nav-brand">English Academy</a>
@@ -260,39 +304,81 @@
   <!-- Main Content Area -->
   <main>
     <h1 class="page-title">Teacher Performance Dashboard</h1>
-    <p class="page-subtitle">Real-time performance metrics, observations, and quality scores live from Google Sheets.</p>
+    <p class="page-subtitle">Real-time operational overview aggregated from live center logs.</p>
 
-    <!-- KPI Summary Row -->
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-title">Total Records</div>
-        <div class="kpi-value" id="kpi-teachers">--</div>
+    <!-- Dynamic Filter Bar -->
+    <div class="filter-card">
+      <div class="filter-group">
+        <label for="filter-week">Week #</label>
+        <select id="filter-week"></select>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Average UKRG Score</div>
-        <div class="kpi-value" id="kpi-ukrg">--</div>
+      <div class="filter-group">
+        <label for="filter-region">Region</label>
+        <select id="filter-region"><option value="ALL">All Regions</option></select>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Average SQT Rate</div>
-        <div class="kpi-value" id="kpi-sqt">--</div>
+      <div class="filter-group">
+        <label for="filter-center">Center</label>
+        <select id="filter-center"><option value="ALL">All Centers</option></select>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Average RQT Rate</div>
-        <div class="kpi-value" id="kpi-rqt">--</div>
+      <div class="filter-group">
+        <label for="filter-type">Teacher Type</label>
+        <select id="filter-type"><option value="ALL">All Types</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-status">Teacher Status</label>
+        <select id="filter-status"><option value="ALL">All Statuses</option></select>
       </div>
     </div>
 
-    <!-- Native Data Table -->
+    <!-- Main Data Overview (KPI Summary Cards) -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Active Teachers</div>
+        <div class="kpi-value" id="kpi-active-teachers">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Observed Teachers</div>
+        <div class="kpi-value" id="kpi-observed-teachers">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Teachers Taken UKRG</div>
+        <div class="kpi-value" id="kpi-ukrg-teachers">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Qualified Teachers</div>
+        <div class="kpi-value" id="kpi-qualified-teachers">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Overall RQT Rate</div>
+        <div class="kpi-value" id="kpi-rqt-rate">0.0%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Overall SQT Rate</div>
+        <div class="kpi-value" id="kpi-sqt-rate">0.0%</div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
     <div class="table-container">
       <table id="teacherTable" class="display responsive nowrap">
         <thead>
-          <tr id="tableHeader">
-            <!-- Headers generated dynamically -->
+          <tr>
+            <th>Week #</th>
+            <th>Region</th>
+            <th>Center</th>
+            <th># Teachers</th>
+            <th># Qualified Teachers</th>
+            <th>% RQT</th>
+            <th># Observed</th>
+            <th>% Observed</th>
+            <th>Avg Score Obs</th>
+            <th># Taken Test</th>
+            <th>% Taken Test</th>
+            <th>Avg Score Test</th>
+            <th>SQT</th>
           </tr>
         </thead>
-        <tbody id="tableBody">
-          <!-- Rows generated dynamically -->
-        </tbody>
+        <tbody id="tableBody"></tbody>
       </table>
     </div>
   </main>
@@ -309,66 +395,176 @@
   <script>
     const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTEx-IAmyu2v_oB025kufDC66x3fDqLQanQfufWU_zt1rTkiF_rfIpGisjD3RDW-WcMmzNqZv2YvwUp/pub?gid=831264579&single=true&output=csv';
 
+    let rawDataset = [];
+    let dataTableInstance = null;
+
     $(document).ready(function() {
       Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          buildDashboard(results.data);
+          rawDataset = results.data;
+          initFilters(rawDataset);
+          applyFiltersAndRender();
         }
+      });
+
+      // Bind Change Listeners to Filters
+      $('#filter-week, #filter-region, #filter-center, #filter-type, #filter-status').on('change', function() {
+        applyFiltersAndRender();
       });
     });
 
-    function buildDashboard(data) {
-      if (!data || data.length === 0) return;
+    function cleanNum(val) {
+      if (!val) return 0;
+      let clean = val.toString().replace(/%/g, '').replace(/,/g, '').trim();
+      let parsed = parseFloat(clean);
+      return isNaN(parsed) ? 0 : parsed;
+    }
 
-      $('#kpi-teachers').text(data.length);
-
-      // Extract Headers dynamically from the CSV sheet
-      const headers = Object.keys(data[0]);
-      let headerHtml = '';
-      headers.forEach(h => headerHtml += `<th>${h}</th>`);
-      $('#tableHeader').html(headerHtml);
-
-      // Populate Table Rows & Calculate Metric Averages
-      let bodyHtml = '';
-      let sumUKRG = 0, countUKRG = 0;
-      let sumSQT = 0, countSQT = 0;
-      let sumRQT = 0, countRQT = 0;
+    function initFilters(data) {
+      const weeks = new Set();
+      const regions = new Set();
+      const centers = new Set();
+      const types = new Set();
+      const statuses = new Set();
 
       data.forEach(row => {
-        bodyHtml += '<tr>';
-        headers.forEach(h => {
-          let val = row[h] || '-';
+        if (row['Week #']) weeks.add(row['Week #'].trim());
+        if (row['Region']) regions.add(row['Region'].trim());
+        if (row['Center']) centers.add(row['Center'].trim());
+        if (row['Teacher Type']) types.add(row['Teacher Type'].trim());
+        if (row['Teacher Status']) statuses.add(row['Teacher Status'].trim());
+      });
 
-          // Track averages dynamically if matching column names exist
-          const headerLower = h.toLowerCase();
-          const cleanNum = parseFloat(val.toString().replace('%', ''));
+      // Populate Week Dropdown (Single Select - Latest Week Selected by Default)
+      const weekArr = Array.from(weeks).sort((a, b) => b.localeCompare(a, undefined, {numeric: true}));
+      $('#filter-week').empty();
+      weekArr.forEach((w, index) => {
+        $('#filter-week').append(`<option value="${w}" ${index === 0 ? 'selected' : ''}>${w}</option>`);
+      });
 
-          if (!isNaN(cleanNum)) {
-            if (headerLower.includes('ukrg')) { sumUKRG += cleanNum; countUKRG++; }
-            if (headerLower.includes('sqt')) { sumSQT += cleanNum; countSQT++; }
-            if (headerLower.includes('rqt')) { sumRQT += cleanNum; countRQT++; }
-          }
+      // Populate Regions
+      Array.from(regions).sort().forEach(r => {
+        $('#filter-region').append(`<option value="${r}">${r}</option>`);
+      });
 
-          bodyHtml += `<td>${val}</td>`;
-        });
-        bodyHtml += '</tr>';
+      // Populate Centers
+      Array.from(centers).sort().forEach(c => {
+        $('#filter-center').append(`<option value="${c}">${c}</option>`);
+      });
+
+      // Populate Types
+      Array.from(types).sort().forEach(t => {
+        $('#filter-type').append(`<option value="${t}">${t}</option>`);
+      });
+
+      // Populate Statuses
+      Array.from(statuses).sort().forEach(s => {
+        $('#filter-status').append(`<option value="${s}">${s}</option>`);
+      });
+    }
+
+    function applyFiltersAndRender() {
+      const selectedWeek = $('#filter-week').val();
+      const selectedRegion = $('#filter-region').val();
+      const selectedCenter = $('#filter-center').val();
+      const selectedType = $('#filter-type').val();
+      const selectedStatus = $('#filter-status').val();
+
+      // Filter Data
+      const filtered = rawDataset.filter(row => {
+        const matchWeek = !selectedWeek || (row['Week #'] && row['Week #'].trim() === selectedWeek);
+        const matchRegion = selectedRegion === 'ALL' || (row['Region'] && row['Region'].trim() === selectedRegion);
+        const matchCenter = selectedCenter === 'ALL' || (row['Center'] && row['Center'].trim() === selectedCenter);
+        const matchType = selectedType === 'ALL' || (row['Teacher Type'] && row['Teacher Type'].trim() === selectedType);
+        const matchStatus = selectedStatus === 'ALL' || (row['Teacher Status'] && row['Teacher Status'].trim() === selectedStatus);
+
+        return matchWeek && matchRegion && matchCenter && matchType && matchStatus;
+      });
+
+      calculateAndDisplayKPIs(filtered);
+      renderTable(filtered);
+    }
+
+    function calculateAndDisplayKPIs(data) {
+      let totalTeachers = 0;
+      let totalObserved = 0;
+      let totalTakenTest = 0;
+      let totalQualified = 0;
+      let totalSesi = 0;
+      let totalQualifiedSesi = 0;
+
+      data.forEach(row => {
+        totalTeachers += cleanNum(row['# Teachers']);
+        totalObserved += cleanNum(row['# Active Teachers Observed']);
+        totalTakenTest += cleanNum(row['# Unique Teachers UKRG']);
+        totalQualified += cleanNum(row['# Qualified Teachers']);
+        totalSesi += cleanNum(row['# Sesi']);
+        totalQualifiedSesi += cleanNum(row['# Qualified Sesi']);
+      });
+
+      const overallRQT = totalTeachers > 0 ? ((totalQualified / totalTeachers) * 100).toFixed(1) : '0.0';
+      const overallSQT = totalSesi > 0 ? ((totalQualifiedSesi / totalSesi) * 100).toFixed(1) : '0.0';
+
+      $('#kpi-active-teachers').text(totalTeachers.toLocaleString());
+      $('#kpi-observed-teachers').text(totalObserved.toLocaleString());
+      $('#kpi-ukrg-teachers').text(totalTakenTest.toLocaleString());
+      $('#kpi-qualified-teachers').text(totalQualified.toLocaleString());
+      $('#kpi-rqt-rate').text(`${overallRQT}%`);
+      $('#kpi-sqt-rate').text(`${overallSQT}%`);
+    }
+
+    function renderTable(data) {
+      if (dataTableInstance) {
+        dataTableInstance.destroy();
+      }
+
+      let bodyHtml = '';
+      data.forEach(row => {
+        const numTeachers = cleanNum(row['# Teachers']);
+        const numQualified = cleanNum(row['# Qualified Teachers']);
+        const pctRQT = numTeachers > 0 ? ((numQualified / numTeachers) * 100).toFixed(1) : cleanNum(row['% Qualified Teachers (RQT)']).toFixed(1);
+
+        const numObserved = cleanNum(row['# Active Teachers Observed']);
+        const pctObserved = numTeachers > 0 ? ((numObserved / numTeachers) * 100).toFixed(1) : cleanNum(row['% Active Teachrs Observed']).toFixed(1);
+        const avgScoreObs = cleanNum(row['Average Nilai Observation']).toFixed(1);
+
+        const numTakenTest = cleanNum(row['# Unique Teachers UKRG']);
+        const pctTakenTest = numTeachers > 0 ? ((numTakenTest / numTeachers) * 100).toFixed(1) : cleanNum(row['% Unique Teachers Taken Test']).toFixed(1);
+        const avgScoreTest = cleanNum(row['Average Nilai UKRG']).toFixed(1);
+
+        const sqtVal = cleanNum(row['SQT']).toFixed(1);
+
+        bodyHtml += `
+          <tr>
+            <td>${row['Week #'] || '-'}</td>
+            <td>${row['Region'] || '-'}</td>
+            <td>${row['Center'] || '-'}</td>
+            <td><strong>${numTeachers}</strong></td>
+            <td>${numQualified}</td>
+            <td>${pctRQT}%</td>
+            <td>${numObserved}</td>
+            <td>${pctObserved}%</td>
+            <td>${avgScoreObs}</td>
+            <td>${numTakenTest}</td>
+            <td>${pctTakenTest}%</td>
+            <td>${avgScoreTest}</td>
+            <td><strong>${sqtVal}%</strong></td>
+          </tr>
+        `;
       });
 
       $('#tableBody').html(bodyHtml);
 
-      // Update KPIs
-      $('#kpi-ukrg').text(countUKRG > 0 ? (sumUKRG / countUKRG).toFixed(1) : 'N/A');
-      $('#kpi-sqt').text(countSQT > 0 ? (sumSQT / countSQT).toFixed(1) + '%' : 'N/A');
-      $('#kpi-rqt').text(countRQT > 0 ? (sumRQT / countRQT).toFixed(1) + '%' : 'N/A');
-
-      // Initialize DataTable
-      $('#teacherTable').DataTable({
+      dataTableInstance = $('#teacherTable').DataTable({
         responsive: true,
         pageLength: 15,
-        order: [[0, 'asc']]
+        order: [[2, 'asc']], // Order by Center name by default
+        language: {
+          emptyTable: "No data available for selected filter combination"
+        }
       });
     }
   </script>
