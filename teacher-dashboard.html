@@ -326,7 +326,9 @@
       </div>
       <div class="filter-group">
         <label for="filter-status">Teacher Status</label>
-        <select id="filter-status"><option value="ALL">All Statuses</option></select>
+        <select id="filter-status">
+          <option value="ALL">All Statuses</option>
+        </select>
       </div>
     </div>
 
@@ -438,7 +440,7 @@
         if (row['Teacher Status']) statuses.add(row['Teacher Status'].trim());
       });
 
-      // Populate Week Dropdown (Single Select - Latest Week Selected by Default)
+      // Populate Week Dropdown (Single Select - Latest Week Default)
       const weekArr = Array.from(weeks).sort((a, b) => b.localeCompare(a, undefined, {numeric: true}));
       $('#filter-week').empty();
       weekArr.forEach((w, index) => {
@@ -460,9 +462,10 @@
         $('#filter-type').append(`<option value="${t}">${t}</option>`);
       });
 
-      // Populate Statuses
+      // Populate Statuses (Defaults to 'Active' on initialization)
       Array.from(statuses).sort().forEach(s => {
-        $('#filter-status').append(`<option value="${s}">${s}</option>`);
+        const isDefault = s.toLowerCase() === 'active';
+        $('#filter-status').append(`<option value="${s}" ${isDefault ? 'selected' : ''}>${s}</option>`);
       });
     }
 
@@ -489,7 +492,8 @@
     }
 
     function calculateAndDisplayKPIs(data) {
-      let totalTeachers = 0;
+      let activeTeachersCount = 0;
+      let totalFilteredTeachers = 0;
       let totalObserved = 0;
       let totalTakenTest = 0;
       let totalQualified = 0;
@@ -497,7 +501,15 @@
       let totalQualifiedSesi = 0;
 
       data.forEach(row => {
-        totalTeachers += cleanNum(row['# Teachers']);
+        const status = (row['Teacher Status'] || '').trim().toLowerCase();
+        const numTeachers = cleanNum(row['# Teachers']);
+        
+        totalFilteredTeachers += numTeachers;
+
+        if (status === 'active') {
+          activeTeachersCount += numTeachers;
+        }
+
         totalObserved += cleanNum(row['# Active Teachers Observed']);
         totalTakenTest += cleanNum(row['# Unique Teachers UKRG']);
         totalQualified += cleanNum(row['# Qualified Teachers']);
@@ -505,10 +517,12 @@
         totalQualifiedSesi += cleanNum(row['# Qualified Sesi']);
       });
 
-      const overallRQT = totalTeachers > 0 ? ((totalQualified / totalTeachers) * 100).toFixed(1) : '0.0';
+      // RQT denominator uses Active teachers if filtering Active, or total filtered teachers if viewing all
+      const rqtDenominator = activeTeachersCount > 0 ? activeTeachersCount : totalFilteredTeachers;
+      const overallRQT = rqtDenominator > 0 ? ((totalQualified / rqtDenominator) * 100).toFixed(1) : '0.0';
       const overallSQT = totalSesi > 0 ? ((totalQualifiedSesi / totalSesi) * 100).toFixed(1) : '0.0';
 
-      $('#kpi-active-teachers').text(totalTeachers.toLocaleString());
+      $('#kpi-active-teachers').text(activeTeachersCount.toLocaleString());
       $('#kpi-observed-teachers').text(totalObserved.toLocaleString());
       $('#kpi-ukrg-teachers').text(totalTakenTest.toLocaleString());
       $('#kpi-qualified-teachers').text(totalQualified.toLocaleString());
